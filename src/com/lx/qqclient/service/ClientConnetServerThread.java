@@ -15,7 +15,7 @@ import java.net.Socket;
 
 public class ClientConnetServerThread extends Thread{
     private Socket socket;
-
+    private boolean isExist = true;
     public ClientConnetServerThread(Socket socket) {
         this.socket = socket;
     }
@@ -30,7 +30,7 @@ public class ClientConnetServerThread extends Thread{
 
     @Override
     public void run() {
-        while(true){
+        while(isExist){
             //循环等待服务器发来的消息
             ObjectInputStream ois = null;
             try {
@@ -41,6 +41,11 @@ public class ClientConnetServerThread extends Thread{
                     case (MessageType.MESSAGE_RET_ONLINE_FRIEND):
                         System.out.println("在线用户：");
                         System.out.println(message.getContent());
+                        break;
+                    case (MessageType.MESSAGE_COMM_MES):
+                        System.out.println(message.getSender() +" 对 "+message.getGetter()+" 说："+message.getContent());
+                    case (MessageType.MESSAGE_TO_ALL_MES):
+                        System.out.println(message.getSender() +" 的群发消息： " +message.getContent());
                         break;
                     default:
                         System.out.println("还未处理！");

@@ -6,9 +6,11 @@ package com.lx.qqclient.service;/*
  *@create 2023/7/20 15:55
  */
 
+import com.lx.qqclient.utils.Utility;
 import com.lx.qqcommon.Message;
 import com.lx.qqcommon.MessageType;
 import com.lx.qqcommon.User;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.MatchGenerator;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -54,9 +56,60 @@ public class UserClientService {
         //新建一个message
         Message message = new Message();
         message.setMestype(MessageType.MESSAGE_GET_ONLINE_FRIEND);
+        message.setSender(user.getUserId());
         System.out.println();
         try {
             //发送给服务器
+            ObjectOutputStream oos = new ObjectOutputStream(
+                    ManageClientConnectServerThread.get(user.getUserId()).getSocket().getOutputStream());
+            oos.writeObject(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exit(){
+        //给服务端发送一个退出消息
+        Message message = new Message();
+        message.setMestype(MessageType.MESSAGE_CLIENT_EXIT);
+        message.setSender(user.getUserId());
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(
+                    ManageClientConnectServerThread.get(user.getUserId()).getSocket().getOutputStream());
+            oos.writeObject(message);
+            //对应的socket关闭
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMsgToOne(){
+        //获取私聊用户id，发送给客户端
+        System.out.println("请输入私聊用户id：");
+        String getterId = Utility.readString(50);
+        Message message = new Message();
+        message.setSender(user.getUserId());
+        message.setGetter(getterId);
+        System.out.println("输入发送的消息：");
+        message.setContent(Utility.readString(100));
+        message.setMestype(MessageType.MESSAGE_COMM_MES);
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(
+                    ManageClientConnectServerThread.get(user.getUserId()).getSocket().getOutputStream());
+            oos.writeObject(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendToAll(){
+        Message message = new Message();
+        message.setSender(user.getUserId());
+        System.out.println("输入要群发的消息：");
+        message.setContent(Utility.readString(100));
+        message.setMestype(MessageType.MESSAGE_TO_ALL_MES);
+        try {
             ObjectOutputStream oos = new ObjectOutputStream(
                     ManageClientConnectServerThread.get(user.getUserId()).getSocket().getOutputStream());
             oos.writeObject(message);
